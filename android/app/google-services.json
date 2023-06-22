@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "231893872046",
+    "project_id": "newlogin-6cadb",
+    "storage_bucket": "newlogin-6cadb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:231893872046:android:532150244e39a8feab2c3f",
+        "android_client_info": {
+          "package_name": "com.colombologidtics.app.newlogin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "231893872046-a7n2l8k3kkreg3eun54jdp09v0jm0ruh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8eWYAXmWiln5jDUmdotpcaPjdL-OESGs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "231893872046-a7n2l8k3kkreg3eun54jdp09v0jm0ruh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
