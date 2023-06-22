@@ -103,18 +103,7 @@ class _Body extends State<Body> {
       SizedBox(
         height: 10,
       ),
-      SizedBox(
-        height: 100,
-        width: 100,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            CircleAvatar(
-              backgroundImage: AssetImage("assets/images/pro.jpg"),
-            ),
-          ],
-        ),
-      ),
+
 
 
         Padding(

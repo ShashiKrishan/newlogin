@@ -1,12 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:flutter/material.dart';
 import 'package:newlogin/main.dart';
-
 import 'package:newlogin/utils/color_utils.dart';
-
-
-
 
 class SignupScreen extends StatefulWidget {
   @override
@@ -26,7 +21,12 @@ class _SignupScreenState extends State<SignupScreen> {
         title: Text("Sign Up"),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.pop(context, MaterialPageRoute(builder: (context) => LoginScreen())),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
+          },
         ),
       ),
       body: Container(
