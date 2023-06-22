@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:newlogin/home.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LocationPage extends StatefulWidget {
   @override
@@ -13,6 +14,8 @@ class _LocationPageState extends State<LocationPage> {
   late GoogleMapController mapController;
   late Position currentLocation;
   String? currentAddress;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -21,6 +24,30 @@ class _LocationPageState extends State<LocationPage> {
   }
 
   void getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location service is enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location service is not enabled, handle it accordingly
+      return;
+    }
+
+    // Check location permission
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      // Request location permission
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        // Handle location permission denied
+        return;
+      }
+    }
+
+    // Get current location
     currentLocation = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
@@ -45,6 +72,24 @@ class _LocationPageState extends State<LocationPage> {
     }
   }
 
+  void storeLocationDetails() async {
+    try {
+      String? userId = _auth.currentUser?.uid;
+
+      await _firestore.collection('location_details').add({
+        'userId': userId,
+        'address': currentAddress,
+        'latitude': currentLocation.latitude,
+        'longitude': currentLocation.longitude,
+        'timestamp': Timestamp.now(),
+      });
+
+      print('Location details stored in Firestore');
+    } catch (e) {
+      print('Error storing location details: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,12 +98,9 @@ class _LocationPageState extends State<LocationPage> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            );
+            Navigator.pop(context);
           },
-        )
+        ),
       ),
       body: Column(
         children: [
@@ -76,7 +118,8 @@ class _LocationPageState extends State<LocationPage> {
             child: GoogleMap(
               mapType: MapType.normal,
               initialCameraPosition: CameraPosition(
-                target: LatLng(currentLocation.latitude, currentLocation.longitude),
+                target: LatLng(
+                    currentLocation.latitude, currentLocation.longitude),
                 zoom: 15,
               ),
               onMapCreated: (GoogleMapController controller) {
@@ -85,7 +128,8 @@ class _LocationPageState extends State<LocationPage> {
               markers: {
                 Marker(
                   markerId: MarkerId('currentLocation'),
-                  position: LatLng(currentLocation.latitude, currentLocation.longitude),
+                  position:
+                  LatLng(currentLocation.latitude, currentLocation.longitude),
                 ),
               },
             ),
@@ -94,7 +138,10 @@ class _LocationPageState extends State<LocationPage> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.location_pin),
-        onPressed: getCurrentLocation,
+        onPressed: () {
+          getCurrentLocation();
+          storeLocationDetails();
+        },
       ),
     );
   }
