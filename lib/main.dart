@@ -6,10 +6,6 @@ import 'package:newlogin/utils/color_utils.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 
-
-
-
-
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -17,13 +13,11 @@ Future main() async {
   runApp(MyApp());
 }
 
-
-
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Attendance App ',
+      title: 'Attendance App',
       theme: ThemeData(
         primarySwatch: Colors.indigo,
       ),
@@ -41,6 +35,34 @@ class _LoginScreenState extends State<LoginScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   TextEditingController _emailTEC = TextEditingController();
   TextEditingController _passwordTEC = TextEditingController();
+  String _errorMessage = '';
+
+  Future<void> _login() async {
+    var _email = _emailTEC.text;
+    var _password = _passwordTEC.text;
+
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: _email,
+        password: _password,
+      );
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) {
+            return HomeScreen();
+          },
+        ),
+            (route) => false,
+      );
+    } catch (error) {
+      setState(() {
+        _errorMessage = 'Invalid login details. Please check again.';
+      });
+      print('Error: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,31 +124,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(
                   height: 20,
                 ),
+                Text(
+                  _errorMessage,
+                  style: TextStyle(color: Colors.red),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                      onPressed: () {
-                        var _email = _emailTEC.text;
-                        var _password = _passwordTEC.text;
-
-                        _auth
-                            .signInWithEmailAndPassword(
-                            email: _email, password: _password)
-                            .then((UserCredential userCredential) {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (BuildContext context) {
-                                return HomeScreen();
-                              },
-                            ),
-                                (route) => false,
-                          );
-                        }).catchError((error) {
-                          print('Error: $error');
-                        });
-                      },
+                      onPressed: _login,
                       child: Text("Login"),
                     ),
                     SizedBox(
@@ -145,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       },
                       child: Text("Signup"),
-                    )
+                    ),
                   ],
                 ),
               ],
