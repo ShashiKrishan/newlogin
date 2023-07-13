@@ -10,6 +10,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:newlogin/check.dart';
 
 import 'package:newlogin/main.dart';
+import 'package:newlogin/workload_page.dart';
 
 import 'fingerprint.dart';
 
@@ -162,6 +163,37 @@ class _Body extends State<Body> {
                 },
                 icon: Icon(Icons.location_on_outlined),
                 label: Text("Location Tracker", textAlign: TextAlign.center,),
+                style: ElevatedButton.styleFrom(
+                    primary: Colors.indigoAccent),
+
+              )
+          ),
+
+
+          Padding(
+
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: ElevatedButton.icon(
+
+                onPressed: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return WorkloadPage();
+                      },
+                    ),
+                        (route) => false,
+                  );
+
+
+
+
+
+                  print("Working Details adding page will appear soon");
+                },
+                icon: Icon(Icons.work_history_rounded),
+                label: Text("Working Details", textAlign: TextAlign.center,),
                 style: ElevatedButton.styleFrom(
                     primary: Colors.indigoAccent),
 

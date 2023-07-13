@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:newlogin/home.dart';
 
 class LocationPage extends StatefulWidget {
   @override
@@ -96,9 +97,12 @@ class _LocationPageState extends State<LocationPage> {
       appBar: AppBar(
         title: Text('Live Location Tracker'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back_rounded),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen()),
+            );
           },
         ),
       ),

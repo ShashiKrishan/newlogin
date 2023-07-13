@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:newlogin/home.dart';
 
 class EmployeeDetails extends StatefulWidget {
   @override
@@ -62,7 +63,12 @@ class _EmployeeDetailsState extends State<EmployeeDetails> {
         title: Text('Employee CheckIn CheckOut Details'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen()),
+            );
+          },
         ),
       ),
       body: Column(
