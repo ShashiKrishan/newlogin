@@ -1,35 +1,71 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:newlogin/main.dart';
+import 'package:newlogin/home.dart';
 import 'package:newlogin/utils/color_utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'admin_viewUser.dart';
+import 'main.dart';
 
-class SignupScreen extends StatefulWidget {
+class UserLoginScreen extends StatefulWidget {
   @override
-  _SignupScreenState createState() => _SignupScreenState();
+  _UserLoginScreenState createState() => _UserLoginScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _UserLoginScreenState extends State<UserLoginScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   TextEditingController _emailTEC = TextEditingController();
   TextEditingController _passwordTEC = TextEditingController();
+
+  Future<void> _login() async {
+    var _email = _emailTEC.text;
+    var _password = _passwordTEC.text;
+
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: _email,
+        password: _password,
+      );
+
+      String userUID = userCredential.user?.uid ?? '';
+      // Replace 'userRoles' with your actual Firestore collection name
+      DocumentSnapshot userRoleSnapshot = await FirebaseFirestore.instance
+          .collection('userRoles')
+          .doc(userUID)
+          .get();
+
+      if (userRoleSnapshot.exists) {
+        String role = userRoleSnapshot.get('role');
+        if (role == 'admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (BuildContext context) {
+                return AdminDashboardScreen(); // Navigate to LoginScreen for admin
+              },
+            ),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (BuildContext context) {
+                return HomeScreen(); // Navigate to HomeScreen for user
+              },
+            ),
+          );
+        }
+      }
+    } catch (error) {
+      print('Error: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.indigoAccent,
-        title: Text("Sign Up"),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AddNewUsersScreen()),
-            );
-          },
-        ),
+        title: Text("User Login"),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -54,7 +90,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   height: 20,
                 ),
                 const Text(
-                  'Create an account',
+                  'Welcome to the CLW App',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 SizedBox(
@@ -66,7 +102,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   decoration: InputDecoration(
                     prefixIcon: Icon(Icons.email),
                     border: OutlineInputBorder(),
-                    hintText: "Enter Your Email Address Here",
+                    hintText: "Enter Your User Id Here",
                   ),
                 ),
                 SizedBox(
@@ -85,28 +121,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   height: 20,
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    var _email = _emailTEC.text;
-                    var _password = _passwordTEC.text;
-
-                    _auth
-                        .createUserWithEmailAndPassword(
-                        email: _email, password: _password)
-                        .then((UserCredential userCredential) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) {
-                            return AdminDashboardScreen();
-                          },
-                        ),
-                            (route) => false,
-                      );
-                    }).catchError((error) {
-                      print('Error: $error');
-                    });
-                  },
-                  child: Text("Sign Up"),
+                  onPressed: _login,
+                  child: Text("Login"),
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(

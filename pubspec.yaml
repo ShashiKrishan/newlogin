@@ -39,7 +39,11 @@ dependencies:
   google_maps_flutter: ^2.1.0
   location: ^4.4.0
   geocoding: ^2.1.0
-  image_picker: ^0.8.7+1
+  image_picker: ^1.0.1
+  multiple_images_picker: ^1.0.1
+
+  firebase_storage: ^11.2.5
+  firebase_analytics: ^10.4.4
 
   local_auth: ^2.1.6
   geolocator: ^7.2.0

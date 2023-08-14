@@ -1,17 +1,11 @@
-
-
-
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-
-import 'package:newlogin/check.dart';
-
 import 'package:newlogin/main.dart';
+import 'package:newlogin/user_login.dart';
 import 'package:newlogin/workload_page.dart';
-
+import 'add_new_locations.dart';
 import 'fingerprint.dart';
 
 
@@ -35,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
               FirebaseAuth.instance.signOut().then((value) {
                 print("Signed Out");
                 Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => LoginScreen()));
+                    context, MaterialPageRoute(builder: (context) => UserLoginScreen()));
               });
             },
           ),
@@ -69,74 +63,41 @@ class _Body extends State<Body> {
       ),
       child: Column(
         children: <Widget>[
-        SizedBox(
-        height: 10,
-      ),
-      const Text(
-        'Colombo Logistics Groups',
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-      ),
-      SizedBox(
-        height: 20,
-      ),
-      CarouselSlider(
-          items: imageList
-              .map((e) => ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Image.asset(
-                  e,
-                  height: 200,
-                  width: 100,
-                  fit: BoxFit.cover,
+          SizedBox(
+            height: 10,
+          ),
+          const Text(
+            'Colombo Logistics Groups',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          CarouselSlider(
+              items: imageList
+                  .map((e) => ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      e,
+                      height: 200,
+                      width: 100,
+                      fit: BoxFit.cover,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ))
-              .toList(),
-          options: CarouselOptions(
-              autoPlay: true,
-              enableInfiniteScroll: false,
-              enlargeCenterPage: true,
-              height: 150)),
-      SizedBox(
-        height: 10,
-      ),
-
-
-
-        Padding(
-
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: ElevatedButton.icon(
-
-              onPressed: () {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                    builder: (BuildContext context) {
-                      return EmployeeDetails();
-                    },
-                  ),
-                      (route) => false,
-                );
-
-
-
-
-
-                print("Working Details will appear soon");
-              },
-              icon: Icon(Icons.access_time_rounded),
-              label: Text("Check In Check out", textAlign: TextAlign.center,),
-              style: ElevatedButton.styleFrom(
-                  primary: Colors.indigoAccent),
-
-            )
-        ),
-
+              ))
+                  .toList(),
+              options: CarouselOptions(
+                  autoPlay: true,
+                  enableInfiniteScroll: false,
+                  enlargeCenterPage: true,
+                  height: 150)),
+          SizedBox(
+            height: 10,
+          ),
 
 
           Padding(
@@ -145,18 +106,15 @@ class _Body extends State<Body> {
               child: ElevatedButton.icon(
 
                 onPressed: () {
-                  Navigator.pushAndRemoveUntil(
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (BuildContext context) {
                         return LocationPage();
                       },
                     ),
-                        (route) => false,
+
                   );
-
-
-
 
 
                   print("Location Details will appear soon");
@@ -170,24 +128,52 @@ class _Body extends State<Body> {
           ),
 
 
+
           Padding(
 
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: ElevatedButton.icon(
 
                 onPressed: () {
-                  Navigator.pushAndRemoveUntil(
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return AddNewLocationsPage();
+                      },
+                    ),
+
+                  );
+
+
+
+                  print("Add New Location Details will appear soon");
+                },
+                icon: Icon(Icons.add_location),
+                label: Text("Add New Location ", textAlign: TextAlign.center,),
+                style: ElevatedButton.styleFrom(
+                    primary: Colors.indigoAccent),
+
+              )
+          ),
+
+
+
+          Padding(
+
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: ElevatedButton.icon(
+
+                onPressed: () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (BuildContext context) {
                         return WorkloadPage();
                       },
                     ),
-                        (route) => false,
+
                   );
-
-
-
 
 
                   print("Working Details adding page will appear soon");
@@ -202,13 +188,9 @@ class _Body extends State<Body> {
 
 
 
+        ],
 
-
-
-
-      ],
-
-    ),
+      ),
     );
   }
 

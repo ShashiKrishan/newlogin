@@ -5,6 +5,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:newlogin/home.dart';
+import 'check.dart';
 
 class LocationPage extends StatefulWidget {
   @override
@@ -13,7 +14,7 @@ class LocationPage extends StatefulWidget {
 
 class _LocationPageState extends State<LocationPage> {
   late GoogleMapController mapController;
-  late Position currentLocation;
+  Position? currentLocation;
   String? currentAddress;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -21,45 +22,43 @@ class _LocationPageState extends State<LocationPage> {
   @override
   void initState() {
     super.initState();
-    getCurrentLocation();
+    _initLocation();
   }
 
-  void getCurrentLocation() async {
+  Future<void> _initLocation() async {
+    await getCurrentLocation();
+  }
+
+  Future<void> getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Check if location service is enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location service is not enabled, handle it accordingly
       return;
     }
 
-    // Check location permission
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
-      // Request location permission
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        // Handle location permission denied
         return;
       }
     }
 
-    // Get current location
     currentLocation = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
-    getAddressFromCoordinates();
+    _getAddressFromCoordinates();
   }
 
-  Future<void> getAddressFromCoordinates() async {
+  Future<void> _getAddressFromCoordinates() async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
-        currentLocation.latitude,
-        currentLocation.longitude,
+        currentLocation!.latitude,
+        currentLocation!.longitude,
       );
       if (placemarks.isNotEmpty) {
         Placemark placemark = placemarks[0];
@@ -73,21 +72,53 @@ class _LocationPageState extends State<LocationPage> {
     }
   }
 
-  void storeLocationDetails() async {
-    try {
-      String? userId = _auth.currentUser?.uid;
+  Future<void> checkAuthorizationAndNavigate() async {
+    QuerySnapshot authorizedLocationsSnapshot =
+    await _firestore.collection('Authorized_Locations').get();
 
-      await _firestore.collection('location_details').add({
-        'userId': userId,
-        'address': currentAddress,
-        'latitude': currentLocation.latitude,
-        'longitude': currentLocation.longitude,
-        'timestamp': Timestamp.now(),
-      });
+    final List<QueryDocumentSnapshot> authorizedLocations =
+        authorizedLocationsSnapshot.docs;
 
-      print('Location details stored in Firestore');
-    } catch (e) {
-      print('Error storing location details: $e');
+    bool isAuthorized = false;
+
+    for (QueryDocumentSnapshot location in authorizedLocations) {
+      double authorizedLatitude = location['latitude'];
+      double authorizedLongitude = location['longitude'];
+
+      double distanceInMeters = Geolocator.distanceBetween(
+        currentLocation!.latitude,
+        currentLocation!.longitude,
+        authorizedLatitude,
+        authorizedLongitude,
+      );
+
+      if (distanceInMeters < 1000) {
+        isAuthorized = true;
+        break;
+      }
+    }
+
+    if (isAuthorized) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => EmployeeDetails()),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Unauthorized'),
+          content: Text('You are not in an authorized area.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -123,7 +154,9 @@ class _LocationPageState extends State<LocationPage> {
               mapType: MapType.normal,
               initialCameraPosition: CameraPosition(
                 target: LatLng(
-                    currentLocation.latitude, currentLocation.longitude),
+                  currentLocation!.latitude,
+                  currentLocation!.longitude,
+                ),
                 zoom: 15,
               ),
               onMapCreated: (GoogleMapController controller) {
@@ -132,8 +165,10 @@ class _LocationPageState extends State<LocationPage> {
               markers: {
                 Marker(
                   markerId: MarkerId('currentLocation'),
-                  position:
-                  LatLng(currentLocation.latitude, currentLocation.longitude),
+                  position: LatLng(
+                    currentLocation!.latitude,
+                    currentLocation!.longitude,
+                  ),
                 ),
               },
             ),
@@ -142,9 +177,9 @@ class _LocationPageState extends State<LocationPage> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.location_pin),
-        onPressed: () {
-          getCurrentLocation();
-          storeLocationDetails();
+        onPressed: () async {
+          await getCurrentLocation();
+          await checkAuthorizationAndNavigate();
         },
       ),
     );
