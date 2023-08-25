@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'home.dart';
 
@@ -96,8 +96,8 @@ class _AddNewLocationsPageState extends State<AddNewLocationsPage> {
           GoogleMap(
             mapType: MapType.normal,
             initialCameraPosition: CameraPosition(
-              target:
-              LatLng(currentLocation.latitude, currentLocation.longitude),
+              target: LatLng(
+                  currentLocation.latitude, currentLocation.longitude),
               zoom: 15,
             ),
             onMapCreated: _onMapCreated,
@@ -112,7 +112,8 @@ class _AddNewLocationsPageState extends State<AddNewLocationsPage> {
                 children: [
                   TextField(
                     controller: _locationNameController,
-                    decoration: InputDecoration(labelText: 'Location Name'),
+                    decoration:
+                    InputDecoration(labelText: 'Location Name'),
                   ),
                   SizedBox(height: 16),
                   ElevatedButton(
@@ -130,13 +131,37 @@ class _AddNewLocationsPageState extends State<AddNewLocationsPage> {
     );
   }
 
+  Future<bool> _hasUserAddedLocation() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final userId = user?.uid;
+
+    final addedLocationDoc = await FirebaseFirestore.instance
+        .collection('AddedLocations')
+        .doc(userId)
+        .get();
+
+    return addedLocationDoc.exists;
+  }
+
   void _addNewLocation() async {
     try {
+      bool hasAddedLocation = await _hasUserAddedLocation();
+      if (hasAddedLocation) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('You have already added a location.')),
+        );
+        return;
+      }
+
       double latitude = currentLocation.latitude;
       double longitude = currentLocation.longitude;
       String locationName = _locationNameController.text;
 
       // Save the new location to Firestore with the custom name as the document ID
+      final user = FirebaseAuth.instance.currentUser;
+      final userId = user?.uid;
+      final userEmail = user?.email; // Get the user's email address
+
       await FirebaseFirestore.instance
           .collection('suggested_locations')
           .doc(locationName)
@@ -144,6 +169,16 @@ class _AddNewLocationsPageState extends State<AddNewLocationsPage> {
         'latitude': latitude,
         'longitude': longitude,
         'timestamp': FieldValue.serverTimestamp(),
+        'userEmail': userEmail, // Add the user's email address
+      });
+
+      // Mark that the user has added a location
+      await FirebaseFirestore.instance
+          .collection('AddedLocations')
+          .doc(userId)
+          .set({
+        'timestamp': FieldValue.serverTimestamp(),
+        'userEmail': userEmail, // Add the user's email address
       });
 
       // Show a success message
@@ -157,8 +192,4 @@ class _AddNewLocationsPageState extends State<AddNewLocationsPage> {
       );
     }
   }
-}
-
-void main() {
-  runApp(MaterialApp(home: AddNewLocationsPage()));
 }

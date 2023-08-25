@@ -27,7 +27,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
       );
 
       String userUID = userCredential.user?.uid ?? '';
-      // Replace 'userRoles' with your actual Firestore collection name
+
       DocumentSnapshot userRoleSnapshot = await FirebaseFirestore.instance
           .collection('userRoles')
           .doc(userUID)

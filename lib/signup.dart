@@ -1,9 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:newlogin/main.dart';
-import 'package:newlogin/utils/color_utils.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'admin_viewUser.dart';
+import 'main.dart';
 
 class SignupScreen extends StatefulWidget {
   @override
@@ -14,6 +13,8 @@ class _SignupScreenState extends State<SignupScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   TextEditingController _emailTEC = TextEditingController();
   TextEditingController _passwordTEC = TextEditingController();
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +38,7 @@ class _SignupScreenState extends State<SignupScreen> {
             colors: [
               hexStringToColor("4169E1"),
               hexStringToColor("BDFCC9"),
-              hexStringToColor("FF7F00")
+              hexStringToColor("FF7F00"),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -85,26 +86,39 @@ class _SignupScreenState extends State<SignupScreen> {
                   height: 20,
                 ),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     var _email = _emailTEC.text;
                     var _password = _passwordTEC.text;
 
-                    _auth
-                        .createUserWithEmailAndPassword(
-                        email: _email, password: _password)
-                        .then((UserCredential userCredential) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) {
-                            return AdminDashboardScreen();
-                          },
-                        ),
-                            (route) => false,
+                    try {
+                      UserCredential userCredential =
+                      await _auth.createUserWithEmailAndPassword(
+                        email: _email,
+                        password: _password,
                       );
-                    }).catchError((error) {
+
+                      if (userCredential.user != null) {
+                        await _firestore
+                            .collection('users')
+                            .doc(userCredential.user!.uid)
+                            .set({
+                          'email': _email,
+                          // Add more fields as needed
+                        });
+
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (BuildContext context) {
+                              return AdminDashboardScreen();
+                            },
+                          ),
+                              (route) => false,
+                        );
+                      }
+                    } catch (error) {
                       print('Error: $error');
-                    });
+                    }
                   },
                   child: Text("Sign Up"),
                 ),
@@ -122,5 +136,12 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ),
     );
+  }
+
+  Color hexStringToColor(String hexColor) {
+    final buffer = StringBuffer();
+    if (hexColor.length == 6 || hexColor.length == 7) buffer.write('ff');
+    buffer.write(hexColor.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
   }
 }

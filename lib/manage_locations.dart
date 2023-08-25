@@ -3,6 +3,7 @@ import 'package:newlogin/suggested_locations.dart';
 import 'package:newlogin/utils/color_utils.dart';
 
 import 'authorized_locations.dart';
+import 'location_added_user.dart';
 import 'main.dart';
 
 class ManageLocationsScreen extends StatelessWidget {
@@ -67,6 +68,21 @@ class ManageLocationsScreen extends StatelessWidget {
                   );
                 },
                 child: Text("Authorized Locations"),
+              ),
+
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return LocationAddedUserPage();
+                      },
+                    ),
+                  );
+                },
+                child: Text("Location Added Users"),
               ),
             ],
           ),

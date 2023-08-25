@@ -3,6 +3,7 @@ import 'package:newlogin/signup.dart';
 import 'package:newlogin/utils/color_utils.dart';
 
 import 'main.dart';
+import 'manage_users.dart';
 
 class AddNewUsersScreen extends StatelessWidget {
   @override
@@ -52,6 +53,21 @@ class AddNewUsersScreen extends StatelessWidget {
                   );
                 },
                 child: Text("Sign UP User"),
+              ),
+
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return UserDetailsPage();
+                      },
+                    ),
+                  );
+                },
+                child: Text("View Users"),
               ),
             ],
           ),
